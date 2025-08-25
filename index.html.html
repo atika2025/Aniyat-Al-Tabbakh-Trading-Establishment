@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر مؤسسة آنية الطباخ التجارية</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root{--primary-gold:#D4AF37;--secondary-gold:#B8860B;--light-gold:#F5E6A3;--cream:#FFFDD0;--warm-brown:#8B4513;--text-dark:#2C1810;--white:#FFFFFF;}
+        *{font-family:'Tajawal',sans-serif;}
+        body{background:linear-gradient(135deg,var(--cream) 0%,var(--light-gold) 100%);min-height:100vh;color:var(--text-dark);}
+        .header{background:linear-gradient(135deg,var(--primary-gold),var(--secondary-gold));color:var(--white);padding:20px 0;}
+        .logo{width:80px;height:80px;background:var(--white);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--primary-gold);}
+        .product-card{background:var(--white);border-radius:20px;box-shadow:0 8px 25px rgba(212,175,55,.15);transition:all .4s;overflow:hidden;margin-bottom:30px;}
+        .product-card:hover{transform:translateY(-10px) scale(1.02);box-shadow:0 12px 30px rgba(212,175,55,.25);}
+        .product-image{width:100%;height:250px;object-fit:contain;background:#f0f0f0;}
+        .product-price{color:var(--primary-gold);font-size:1.4rem;font-weight:800;}
+        .btn-custom{background:linear-gradient(135deg,var(--primary-gold),var(--secondary-gold));color:var(--white);border:none;border-radius:25px;padding:12px 30px;font-weight:700;}
+        .cart-icon{position:fixed;bottom:30px;right:30px;background:linear-gradient(135deg,var(--primary-gold),var(--secondary-gold));color:var(--white);width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;z-index:1000;}
+        .badge{display:inline-block;padding:.35em .65em;font-size:.75em;font-weight:700;line-height:1;text-align:center;white-space:nowrap;vertical-align:baseline;border-radius:.25rem;}
+        .status-available{background-color:#28a745;color:white;}
+        .status-out-of-stock{background-color:#dc3545;color:white;}
+        .status-coming-soon{background-color:#ffc107;color:black;}
+                #categoryFilters .btn {
+            font-weight: 600;
+            color: var(--warm-brown);
+            border-color: var(--warm-brown);
+        }
+        #categoryFilters .btn:hover,
+        #categoryFilters .btn-check:checked+.btn {
+            background-color: var(--warm-brown);
+            color: var(--white);
+            border-color: var(--warm-brown);
+        }
+    </style>
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8 d-flex align-items-center gap-3">
+                    <div class="logo"></div>
+                    <div>
+                        <div class="fw-bold fs-4">مؤسسة آنية الطباخ التجارية</div>
+                        <div style="font-size:0.9rem;opacity:.9;">أدوات المطبخ الفاخرة</div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <i class="bi bi-whatsapp"></i> للطلب: <span dir="ltr">+966534901100</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-4">
+        <div class="category-filter mb-4">
+            <h5 class="mb-3 fw-bold"><i class="bi bi-filter"></i> تصفية حسب التصنيف:</h5>
+            <div class="btn-group flex-wrap" id="categoryFilters" role="group">
+                <input type="radio" class="btn-check" name="category" id="all" value="all" checked>
+                <label class="btn btn-outline-warning" for="all">الكل</label>
+                <!-- سيتم ملء باقي الأزرار ديناميكيًا -->
+            </div>
+        </div>
+
+        <div class="row" id="productsContainer"></div>
+    </div>
+
+    <div class="cart-icon" onclick="showCart()">
+        <i class="bi bi-cart4"></i>
+        <span class="cart-count" id="cartCount">0</span>
+    </div>
+
+    <!-- سلة المشتريات -->
+    <div class="modal fade" id="cartModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background:#D4AF37;color:#fff">
+                    <h5 class="modal-title"><i class="bi bi-cart4"></i> سلة المشتريات</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="cartItemsContainer"></div>
+                <div class="modal-footer d-flex justify-content-between">
+                    <div class="fw-bold">الإجمالي: <span id="cartTotal">0 ر.س</span></div>
+                    <button type="button" class="btn btn-success" onclick="sendWhatsAppOrder()">
+                        <i class="bi bi-whatsapp"></i> إرسال الطلب عبر واتساب
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const ADMIN_PASSWORD = "1234";
+        let cart = [];
+        let isAdminMode = false;
+        const logoUrl = "https://media-pmo1-1.cdn.whatsapp.net/v/t61.24694-24/503330578_696092616529725_4167810524660818063_n.jpg?ccb=11-4&oh=01_Q5Aa2QHZpbTrvQqmElbouQ3xlcShMOkpN8MP9v4x6qNBHBFbgA&oe=68B99E17&_nc_sid=5e03e0&_nc_cat=104"; // <--- ألصق رابط الشعار الجديد هنا بين علامتي الاقتباس
+        const phoneNumber = "+966534901100";
+
+        // ==== قائمة المنتجات ثابتة داخل الصفحة ====
+        let products = [
+    {
+        "id": 1,
+        "name": "طنجرة ضغط 6 لتر استانلس",
+        "code": "POT-001",
+        "images": [
+            "https://media.zid.store/d4f9db48-09ff-462c-ac54-b260339b1748/7a929938-aa9a-4122-8462-23aa39d801be.jpg"
+        ],
+        "category": "أواني طبخ",
+        "status": "available",
+        "price": 199
+    },
+    {
+        "id": 2,
+        "name": "صينية فرن كبيرة غير لاصقة",
+        "code": "TRAY-202",
+        "images": [
+            "https://m.media-amazon.com/images/I/71YBxpW1UrL._UF1000,1000_QL80_.jpg"
+        ],
+        "category": "أدوات مطبخ",
+        "status": "out-of-stock",
+        "price": 45
+    },
+    {
+        "id": 3,
+        "name": "سفن ديش كبير ٣٠ سم",
+        "code": "SVN-303",
+        "images": [
+            "https://cdn.salla.sa/BlpDY/2PTY0nl1JXPpZtcZDY4xi8zYFkJayDVMQDOIBP31.png"
+        ],
+        "category": "أواني طبخ",
+        "status": "available",
+        "price": 1300
+    },
+    {
+        "id": 4,
+        "name": "طقم سكاكين ستانلس 5 قطع",
+        "code": "KNF-5P",
+        "price": 89.0,
+        "category": "سكاكين وشحذ",
+        "status": "available",
+        "images": [
+            "https://cartlow.gumlet.io/e0a27e3284767c6f16fa8763d2b41259.jpg?width=350&height=0"
+        ]
+    },
+    {
+        "id": 1020125210,
+        "name": "عجانة كبيرة",
+        "code": "206040",
+        "price": 1000.0,
+        "category": "أواني فرن",
+        "status": "available",
+        "images": [
+            "https://media.zid.store/thumbs/046b91fb-2083-4b61-a03b-3bbca296ee66/16164161-b610-4661-8583-80426c9e6ca8-thumbnail-1000x1000-70.jpg"
+        ]
+    }
+];
+
+        // ==== تصنيفات جاهزة ====
+        const categories = [
+    "أواني طبخ",
+    "أدوات مطبخ",
+    "صحون وأطباق",
+    "أكواب وكاسات",
+    "أدوات تقديم",
+    "تخزين طعام",
+    "أجهزة مطبخ صغيرة",
+    "منظفات مطبخ",
+    "سكاكين وشحذ",
+    "أواني فرن"
+];
+
+        // ==== عرض المنتجات ====
+        function displayProducts(selectedCategory = 'all') {
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = '';
+            const filtered = selectedCategory === 'all' ? products : products.filter(p => p.category === selectedCategory);
+            filtered.forEach(p => {
+                const imgSrc = p.images?.[0] || "https://via.placeholder.com/300x250/DAA520/8B4513?text=لا+يوجد+صورة";
+                const statusClass = p.status === 'available' ? 'status-available' :
+                                    p.status === 'out-of-stock' ? 'status-out-of-stock' : 'status-coming-soon';
+                const statusText = {available:'متاح','out-of-stock':'منتهي','coming-soon':'قريباً'}[p.status];
+                container.innerHTML += `
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="product-card">
+                        <img src="${imgSrc}" alt="${p.name}" class="product-image" style="cursor:pointer" onclick="openCarousel(${p.id})">
+                        <div class="product-info p-3">
+                            <h6 class="fw-bold">${p.name}</h6>
+                            <small>الكود: ${p.code}</small><br>
+                            <small>التصنيف: ${p.category}</small><br>
+                            <span class="badge ${statusClass}">${statusText}</span><br>
+                            <span class="product-price">${p.price} ر.س</span>
+                            <div class="d-flex justify-content-center mt-2">
+                                <button class="btn btn-custom btn-sm" onclick="addToCart(${p.id})" ${p.status!=='available'?'disabled':''}>
+                                    <i class="bi bi-cart-plus"></i> أضف للطلب
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        // تصنيفات
+        function createFilters() {
+            const filterGroup = document.querySelector('#categoryFilters');
+            filterGroup.innerHTML = `<input type="radio" class="btn-check" name="category" id="all" value="all" checked>
+                                     <label class="btn btn-outline-warning" for="all">الكل</label>`;
+            categories.forEach((cat, i) => {
+                filterGroup.innerHTML += `
+                <input type="radio" class="btn-check" name="category" id="cat${i}" value="${cat}">
+                <label class="btn btn-outline-warning" for="cat${i}">${cat}</label>`;
+            });
+            filterGroup.addEventListener('change', e => displayProducts(e.target.value));
+        }
+
+        // سلة المشتريات
+        function addToCart(id) {
+            const p = products.find(x => x.id === id);
+            const exists = cart.find(x => x.id === id);
+            if (exists) exists.quantity++; else cart.push({...p, quantity:1});
+            updateCartCount();
+            Swal.fire({toast:true,position:'top-end',timer:1500,icon:'success',title:'تمت الإضافة'});
+        }
+        function updateCartCount() {
+            document.getElementById('cartCount').textContent = cart.reduce((t,i)=>t+i.quantity,0);
+        }
+        function openCarousel(id) {
+            const p = products.find(x => x.id === id);
+            if (!p.images?.length) return;
+            const inner = document.getElementById('carouselInner');
+            inner.innerHTML = '';
+            p.images.forEach((img,i)=> inner.innerHTML += `<div class="carousel-item ${i==0?'active':''}"><img src="${img}" class="d-block w-100"></div>`);
+            const modal = new bootstrap.Modal(document.getElementById('productImagesModal'));
+            modal.show();
+        }
+        function showCart() {
+            const container = document.getElementById('cartItemsContainer');
+            const total = cart.reduce((t,i)=>t+i.price*i.quantity,0);
+            container.innerHTML = cart.map((it,i)=>`
+                <div class="d-flex align-items-center mb-3 border-bottom pb-2">
+                    <img src="${it.images?.[0]}" style="width:70px;height:70px;object-fit:contain" class="rounded me-3">
+                    <div class="flex-grow-1">
+                        <b>${it.name}</b><br><small>الكود: ${it.code}</small><br>${it.price} ر.س × ${it.quantity}
+                    </div>
+                    <button class="btn btn-sm btn-danger" onclick="cart.splice(${i},1);updateCartCount();showCart()"><i class="bi bi-x"></i></button>
+                </div>`).join('') || '<p class="text-center text-muted">السلة فارغة</p>';
+            document.getElementById('cartTotal').textContent = total + ' ر.س';
+            new bootstrap.Modal(document.getElementById('cartModal')).show();
+        }
+        function sendWhatsAppOrder() {
+            if (!cart.length) return Swal.fire('السلة فارغة');
+            const msg = cart.map((it,i)=>`${i+1}. ${it.name} (كود ${it.code}) - ${it.quantity} × ${it.price} ر.س`).join('\n') + `\n\nالإجمالي: ${cart.reduce((t,i)=>t+i.price*i.quantity,0)} ر.س`;
+            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(msg)}`,'_blank');
+        }
+
+        // تشغيل
+        createFilters();
+        displayProducts();
+        updateCartCount();
+
+        // Set the logo
+        if (logoUrl) {
+            document.querySelector('.logo').innerHTML = `<img src="${logoUrl}" alt="Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+        } else {
+            document.querySelector('.logo').innerHTML = '<i class="bi bi-shop"></i>';
+        }
+    </script>
+</body>
+</html>
